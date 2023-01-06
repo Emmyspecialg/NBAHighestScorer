@@ -10,6 +10,3 @@ We parameterized the date so that we can add the date to the HTTP request dynami
 We used pandas and lambda functions to convert the data from JSON to a dataframe
 
 *We inspected the contents of the dataframe: all of the scorers and their scores for all NBA games played on a given date.
-
-
-
