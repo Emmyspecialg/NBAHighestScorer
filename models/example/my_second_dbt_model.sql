@@ -1,6 +1,6 @@
+use warehouse PC_DBT_WH;
+--select * from PC_DBT_DB.INFORMATION_SCHEMA.ENABLED_ROLES;
 
--- Use the `ref` function to select from other models
-
-select *
-from {{ ref('my_first_dbt_model') }}
-where id = 1
+select first_name, last_name, points 
+from {{ ref('scores_2022_10_18')}}
+order by points desc;
