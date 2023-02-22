@@ -10,3 +10,5 @@ We parameterized the date so that we can add the date to the HTTP request dynami
 We used pandas and lambda functions to convert the data from JSON to a dataframe
 
 *We inspected the contents of the dataframe: all of the scorers and their scores for all NBA games played on a given date.
+
+After, we put the extraction of said data on a scheduler through Airflow since the date is parameterized. We stored the data in Snowflake and used DBT to aggregate the data to find the sum of the points and ordered them descendingly. This would enable us to find the top scoring player and have it be updated with every game. 
