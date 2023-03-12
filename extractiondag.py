@@ -8,7 +8,10 @@ import json
 from datetime import datetime 
 
 #when the '22-'23 season started 
-date = "2022-10-18"
+#date = "2022-10-18"
+
+
+date = "{{ ds }}"
 
 def myfunction(date):
     test = requests.get(f"https://www.balldontlie.io/api/v1/stats?dates[]={date}&per_page=100")
@@ -29,14 +32,14 @@ def myfunction(date):
     #creates csv table of data from the date listed above 
     nbascores.to_csv(f"scores_{date}.csv")
     print(nbascores)
-    
+    return nbascores.to_json()
 
 
 
-with DAG(dag_id="GameScoreExtraction", start_date=datetime(2023, 1, 1), schedule="@daily") as dag:
+with DAG(dag_id="demo", start_date=datetime(2023, 10, 18), schedule="@daily") as dag:
     date = "2022-10-18"
-    extraction_operator=PythonOperator(python_callable=myfunction, task_id="scorers", op_kwargs={"date":"2022-10-18"})
-    show_scores = BashOperator(task_id="show_scorers", bash_command="ls")
+    extraction_operator=PythonOperator(python_callable=myfunction, task_id="scorers", op_kwargs={"date":"{{ ds }}"})
+    show_scores = BashOperator(task_id="show_scorers", bash_command="pwd")
     extraction_operator >> show_scores
 
 
