@@ -33,7 +33,7 @@ def myfunction(date):
 
 
 
-with DAG(dag_id="demo", start_date=datetime(2023, 1, 1), schedule="@daily") as dag:
+with DAG(dag_id="GameScoreExtraction", start_date=datetime(2023, 1, 1), schedule="@daily") as dag:
     date = "2022-10-18"
     extraction_operator=PythonOperator(python_callable=myfunction, task_id="scorers", op_kwargs={"date":"2022-10-18"})
     show_scores = BashOperator(task_id="show_scorers", bash_command="ls")
