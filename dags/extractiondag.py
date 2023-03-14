@@ -1,6 +1,7 @@
 # importing request to get info from api, pandas is used for data modeling
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.models.dag import DAG
 import requests
 import pandas as pd
@@ -14,7 +15,7 @@ from datetime import datetime
 date = "{{ ds }}"
 
 
-def api_extraction(date):
+def api_extraction(date, **kwargs):
     test = requests.get(
         f"https://www.balldontlie.io/api/v1/stats?dates[]={date}&per_page=100"
     )
@@ -33,7 +34,7 @@ def api_extraction(date):
     )
 
     # creates csv table of data from the date listed above
-    nbascores.to_csv(f"scores_{date}.csv")
+    nbascores.to_csv(f"scores_test.csv")
     print(nbascores)
     return nbascores.to_json()
 
@@ -49,7 +50,26 @@ with DAG(
         op_kwargs={"date": "{{ ds }}"},
     )
     show_scores = BashOperator(task_id="show_scorers", bash_command="pwd")
-    extraction_operator >> show_scores
+    
+    create_players_table = PostgresOperator(
+        task_id="create_players_table",
+        postgres_conn_id="postgres_local_2",
+        sql="""sql/create_players_schema.sql""",
+    )
+    create_games_table = PostgresOperator(
+        task_id="create_games_table",
+        postgres_conn_id="postgres_local_2",
+        sql="""sql/create_games_schema.sql""",
+    )
+    
+    test_task = PostgresOperator(
+        task_id = "insert_data",
+        postgres_conn_id="postgres_local_2",
+        sql=(
+            """COPY scoresheets_raw(id, first_name, last_name, points) FROM 'tmp/scores_test.csv' DELIMITER ',' CSV HEADER;"""
+            )
+    )
+    extraction_operator >> [create_players_table, create_games_table] >> show_scores >> test_task
 
 
 # f"cat scores_{date}.csv"
