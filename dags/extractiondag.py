@@ -35,7 +35,11 @@ def api_extraction(date, **kwargs):
 
     # creates csv table of data from the date listed above
     nbascores.to_csv(f"scores_test.csv", index=False)
-    print(nbascores)
+    #print(nbascores)
+    #print(nbascores.to_json(orient="records", compression='gzip', lines=True))
+    test_tuples = [tuple(x) for x in nbascores.to_records(index=False)]
+    print(test_tuples)
+
     kwargs['ti'].xcom_push(key=f'scores_{date}', value=nbascores.to_json(orient="records", compression='gzip', lines=True))
 
 
