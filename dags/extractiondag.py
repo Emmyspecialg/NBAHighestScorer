@@ -34,9 +34,9 @@ def api_extraction(date, **kwargs):
     )
 
     # creates csv table of data from the date listed above
-    nbascores.to_csv(f"scores_test.csv")
+    nbascores.to_csv(f"scores_test.csv", index=False)
     print(nbascores)
-    return nbascores.to_json()
+    kwargs['ti'].xcom_push(key=f'scores_{date}', value=nbascores.to_json(orient="records", compression='gzip', lines=True))
 
 
 with DAG(
@@ -47,29 +47,32 @@ with DAG(
     extraction_operator = PythonOperator(
         python_callable=api_extraction,
         task_id="scorers",
+        do_xcom_push=True,
         op_kwargs={"date": "{{ ds }}"},
     )
-    show_scores = BashOperator(task_id="show_scorers", bash_command="pwd")
+    # show_scores = BashOperator(task_id="show_scorers", bash_command="echo {{ ti.xcom_pull(task_ids='scorers', key=None) }}")
     
     create_players_table = PostgresOperator(
         task_id="create_players_table",
-        postgres_conn_id="postgres_local_2",
-        sql="""sql/create_players_schema.sql""",
+        postgres_conn_id="postgres_localhost",
+        sql="""sql/raw_infra/create_players_schema.sql""",
     )
     create_games_table = PostgresOperator(
         task_id="create_games_table",
-        postgres_conn_id="postgres_local_2",
-        sql="""sql/create_games_schema.sql""",
+        postgres_conn_id="postgres_localhost",
+        sql="""sql/raw_infra/create_games_schema.sql""",
     )
+    
     
     test_task = PostgresOperator(
         task_id = "insert_data",
-        postgres_conn_id="postgres_local_2",
+        postgres_conn_id="postgres_localhost",
         sql=(
-            """COPY scoresheets_raw(id, first_name, last_name, points) FROM 'tmp/scores_test.csv' DELIMITER ',' CSV HEADER;"""
+            """INSERT INTO scores_raw(info) VALUES ('{{ ti.xcom_pull(task_ids='scorers', key=None) }}');"""
             )
     )
-    extraction_operator >> [create_players_table, create_games_table] >> show_scores >> test_task
+    
+    extraction_operator >> [create_players_table, create_games_table] >> test_task
 
 
 # f"cat scores_{date}.csv"
