@@ -72,6 +72,18 @@ x-airflow-common:
       condition: service_healthy
 
 services:
+  django-db:
+    image: postgres
+  django-webapp:
+    build: ./django
+    command: python3 django/topscorer/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - django-db
+
   postgres:
     image: postgres:13
     environment:
