@@ -24,8 +24,8 @@ def api_extraction(date, **kwargs):
     df = pd.DataFrame(test.json()["data"])
     df.to_csv("testdata.csv")
     ids = df.player.apply(lambda x: x["id"])
-    first_name = df.player.apply(lambda x: x["first_name"].replace("'",""))
-    last_name = df.player.apply(lambda x: x["last_name"].replace("'",""))
+    first_name = df.player.apply(lambda x: x["first_name"].replace("'", ""))
+    last_name = df.player.apply(lambda x: x["last_name"].replace("'", ""))
     points = df.pts
 
     nbascores = pd.DataFrame(
@@ -38,13 +38,13 @@ def api_extraction(date, **kwargs):
     nba_scores_json = nbascores.to_json(orient="records")
     print(nbascores)
     print(nba_scores_json)
-    #print(nbascores.to_json(orient="records", compression='gzip', lines=True))
-    #table_keys = ["player_id","first_name","last_name","scores"]
-    #scores_data = [tuple(x) for x in nbascores.to_records(index=False)]
-    #data = [dict(zip(table_keys, score)) for score in scores_data]
-    #json_data = json.dumps(data, indent=4)
-    #print(json_data)
-    kwargs['ti'].xcom_push(key=f'scores', value=nba_scores_json)
+    # print(nbascores.to_json(orient="records", compression='gzip', lines=True))
+    # table_keys = ["player_id","first_name","last_name","scores"]
+    # scores_data = [tuple(x) for x in nbascores.to_records(index=False)]
+    # data = [dict(zip(table_keys, score)) for score in scores_data]
+    # json_data = json.dumps(data, indent=4)
+    # print(json_data)
+    kwargs["ti"].xcom_push(key=f"scores", value=nba_scores_json)
 
 
 with DAG(
@@ -59,7 +59,7 @@ with DAG(
         op_kwargs={"date": "{{ ds }}"},
     )
     # show_scores = BashOperator(task_id="show_scorers", bash_command="echo {{ ti.xcom_pull(task_ids='scorers', key=None) }}")
-    
+
     # create_players_table = PostgresOperator(
     #     task_id="create_players_table",
     #     postgres_conn_id="postgres_localhost",
@@ -71,19 +71,19 @@ with DAG(
     #     sql="""sql/raw_infra/create_games_schema.sql""",
     # )
     create_scores_table = PostgresOperator(
-        task_id = "create_scores_table",
+        task_id="create_scores_table",
         postgres_conn_id="postgres_localhost",
-        sql="""sql/raw_infra/create_scores_schema.sql"""
+        sql="""sql/raw_infra/create_scores_schema.sql""",
     )
-    
+
     test_task = PostgresOperator(
-        task_id = "insert_data",
+        task_id="insert_data",
         postgres_conn_id="postgres_localhost",
         sql=(
             """INSERT INTO score_table(player_id, first_name, last_name, points) VALUES {{ ti.xcom_pull(task_ids='scorers', key=None) | replace('[','') | replace(']','') | replace('{','(') | replace('}',')') | replace('"player_id":','') | replace('"first_name":','') | replace('"last_name":','' ) | replace('"points":','' ) | replace('"',"'") }};"""
-            )
+        ),
     )
-    
+
     extraction_operator >> create_scores_table >> test_task
 
 
