@@ -1,0 +1,1 @@
+create table if not exists scores_raw ( info VARCHAR(2500000) ) 

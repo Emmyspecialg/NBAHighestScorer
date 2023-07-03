@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<p> Dashboard</p>
+<p> Dashboard yay</p>
+<table>
+  <tr>
+    <th>id</th>
+    <th>first_name</th>
+    <th>last_name</th>
+    <th>points</th>
+  </tr>
+{% for scoretable in scoretables %}
+  <tr>
+    <td>{{ scoretable.id }}</td>
+    <td>{{ scoretable.first_name }}</td>
+    <td>{{ scoretable.last_name }}</td>
+    <td>{{ scoretable.points }}</td>
+  </tr>    
+{% endfor %}
+</table>
+</html>
+```
