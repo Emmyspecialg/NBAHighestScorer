@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import StatLine
+from .models import ScoreTable
 
-admin.site.register(StatLine)
+admin.site.register(ScoreTable)
