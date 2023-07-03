@@ -82,6 +82,7 @@ pendulum==2.1.2
 pluggy==1.0.0
 prison==0.2.1
 psutil==5.9.5
+psycopg2-binary==2.9.3
 pycparser==2.21
 pydantic==1.10.9
 Pygments==2.15.1

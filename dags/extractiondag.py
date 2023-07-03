@@ -72,13 +72,13 @@ with DAG(
     # )
     create_scores_table = PostgresOperator(
         task_id="create_scores_table",
-        postgres_conn_id="postgres_localhost",
+        postgres_conn_id="django-db-connection",
         sql="""sql/raw_infra/create_scores_schema.sql""",
     )
 
     test_task = PostgresOperator(
         task_id="insert_data",
-        postgres_conn_id="postgres_localhost",
+        postgres_conn_id="django-db-connection",
         sql=(
             """INSERT INTO score_table(player_id, first_name, last_name, points) VALUES {{ ti.xcom_pull(task_ids='scorers', key=None) | replace('[','') | replace(']','') | replace('{','(') | replace('}',')') | replace('"player_id":','') | replace('"first_name":','') | replace('"last_name":','' ) | replace('"points":','' ) | replace('"',"'") }};"""
         ),
