@@ -5,3 +5,4 @@ logs/
 env/
 venv
 .venv
+.env
